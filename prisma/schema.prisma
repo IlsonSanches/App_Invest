@@ -1,0 +1,44 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../dev.db"
+}
+
+model Bank {
+  id        Int      @id @default(autoincrement())
+  name      String
+  assets    Asset[]
+}
+
+model Asset {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String   // Ex: Ação, Fundo, CDB, Tesouro
+  bankId    Int
+  bank      Bank     @relation(fields: [bankId], references: [id])
+  records   DailyRecord[]
+  createdAt DateTime @default(now())
+}
+
+model DailyRecord {
+  id            Int      @id @default(autoincrement())
+  date          DateTime
+  assetId       Int
+  asset         Asset    @relation(fields: [assetId], references: [id])
+  
+  // Dados do dia
+  totalValue    Float    // Saldo final do dia
+  amountAdded   Float    @default(0) // Aportes feitos no dia
+  amountRemoved Float    @default(0) // Resgates feitos no dia
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([date, assetId])
+}
